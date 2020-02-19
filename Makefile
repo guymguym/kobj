@@ -2,11 +2,20 @@
 # GOFLAGS 	?= -mod=vendor
 
 all: run
+	@echo "done."
 .PHONY: all
 
+run: build
+	./kobj server
+.PHONY: run
+
+build: mod
+	go build
+.PHONY: build
+
 mod:
-	go mod vendor
 	go mod tidy
+	go mod vendor
 .PHONY: mod
 
 gen: mod
@@ -19,17 +28,9 @@ gen: mod
 		--go-header-file ./boilerplate.go.txt
 .PHONY: gen
 
-build: mod
-	go build
-.PHONY: build
-
 test:
-	go test
+	go test ./...
 .PHONY: test
-
-run: build
-	./kobj
-.PHONY: run
 
 clean:
 	rm -f ./kobj

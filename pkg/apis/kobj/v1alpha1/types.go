@@ -15,7 +15,6 @@ func init() {
 type Kobj struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Key               string `json:"key"`
 	Value             string `json:"value"`
 }
 

@@ -112,12 +112,6 @@ func schema_pkg_apis_kobj_v1alpha1_Kobj(ref common.ReferenceCallback) common.Ope
 							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
-					"key": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
 					"value": {
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"string"},
@@ -125,7 +119,7 @@ func schema_pkg_apis_kobj_v1alpha1_Kobj(ref common.ReferenceCallback) common.Ope
 						},
 					},
 				},
-				Required: []string{"key", "value"},
+				Required: []string{"value"},
 			},
 		},
 		Dependencies: []string{
