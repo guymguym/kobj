@@ -24,18 +24,14 @@ import (
 	printerstorage "k8s.io/kubernetes/pkg/printers/storage"
 )
 
-// Store defines the interface
-type KobjHandler interface {
-	Get()
-	Put()
-	Delete()
-	List()
-}
-
 type KobjServer struct {
 	APIServer *apiserver.GenericAPIServer
 	Scheme    *runtime.Scheme
 }
+
+const KobjResource = "kobjs"
+
+var KobjGroupResource = kobjv1.Resource(KobjResource)
 
 func NewServer() *KobjServer {
 	klog.Info("KOBJ: Starting ...")
@@ -72,12 +68,12 @@ func NewServer() *KobjServer {
 	s, err := completedConfig.New("kobj", delegate)
 	util.Assert(err)
 
+	storage := NewKobjMemStorage()
 	strategy := &KobjStrategy{}
-	storage := &KobjMemStorage{}
 	store := &genericregistry.Store{
 		NewFunc:                  func() runtime.Object { return &kobjv1.Kobj{} },
 		NewListFunc:              func() runtime.Object { return &kobjv1.KobjList{} },
-		DefaultQualifiedResource: GroupResource,
+		DefaultQualifiedResource: KobjGroupResource,
 		PredicateFunc:            KobjMatcher,
 		CreateStrategy:           strategy,
 		UpdateStrategy:           strategy,
@@ -91,12 +87,12 @@ func NewServer() *KobjServer {
 		},
 	}
 	util.Assert(store.CompleteWithOptions(&generic.StoreOptions{
-		RESTOptions: generic.RESTOptions{ResourcePrefix: GroupResource.Resource},
+		RESTOptions: generic.RESTOptions{ResourcePrefix: KobjResource},
 		AttrFunc:    KobjGetAttrs,
 	}))
 
 	groupInfo := apiserver.NewDefaultAPIGroupInfo(kobjv1.GroupName, scheme, runtime.NewParameterCodec(scheme), codecs)
-	groupInfo.VersionedResourcesStorageMap[kobjv1.GroupVersion] = map[string]rest.Storage{GroupResource.Resource: store}
+	groupInfo.VersionedResourcesStorageMap[kobjv1.VersionName] = map[string]rest.Storage{KobjResource: store}
 	groupInfo.MetaGroupVersion = &kobjv1.SchemeGroupVersion
 	_ = s.InstallAPIGroup(&groupInfo)
 
@@ -113,24 +109,10 @@ func (s *KobjServer) Run() error {
 }
 
 func NewScheme() *runtime.Scheme {
-
 	scheme := runtime.NewScheme()
-
-	util.Assert(apis.SchemeBuilder.AddToScheme(scheme))
-
+	util.Assert(apis.AddToScheme(scheme))
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
 	metav1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1"})
-
-	// // TODO: keep the generic API server from wanting this
-	// unversioned := schema.GroupVersion{Group: "", Version: "v1"}
-	// scheme.AddUnversionedTypes(unversioned,
-	// 	&metav1.Status{},
-	// 	&metav1.APIVersions{},
-	// 	&metav1.APIGroupList{},
-	// 	&metav1.APIGroup{},
-	// 	&metav1.APIResourceList{},
-	// )
-
 	return scheme
 }

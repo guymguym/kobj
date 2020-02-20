@@ -12,10 +12,14 @@ import (
 	"k8s.io/apiserver/pkg/storage"
 )
 
-var GroupResource = kobjv1.SchemeGroupVersion.WithResource("kobjs").GroupResource()
-
 type KobjMemStorage struct {
 	Index map[string]*kobjv1.Kobj
+}
+
+func NewKobjMemStorage() *KobjMemStorage {
+	return &KobjMemStorage{
+		Index: make(map[string]*kobjv1.Kobj),
+	}
 }
 
 var _ storage.Interface = &KobjMemStorage{}
@@ -69,26 +73,30 @@ func (s *KobjMemStorage) Get(ctx context.Context, key string, resourceVersion st
 		if ignoreNotFound {
 			return nil
 		}
-		return errors.NewNotFound(GroupResource, key)
+		return errors.NewNotFound(KobjGroupResource, key)
 	}
-	if objPtr != nil {
-		ko.DeepCopyInto(objPtr.(*kobjv1.Kobj))
-	}
+	ko.DeepCopyInto(objPtr.(*kobjv1.Kobj))
 	return nil
 }
 
 func (s *KobjMemStorage) GetToList(ctx context.Context, key string, resourceVersion string, p storage.SelectionPredicate, listObj runtime.Object) error {
 	list := listObj.(*kobjv1.KobjList)
 	ko := s.Index[key]
-	list.Items = []kobjv1.Kobj{*ko}
+	items := make([]kobjv1.Kobj, 1)
+	ko.DeepCopyInto(&items[0])
+	list.Items = items
 	return nil
 }
 
 func (s *KobjMemStorage) List(ctx context.Context, key string, resourceVersion string, p storage.SelectionPredicate, listObj runtime.Object) error {
 	list := listObj.(*kobjv1.KobjList)
+	items := make([]kobjv1.Kobj, len(s.Index))
+	i := 0
 	for _, ko := range s.Index {
-		list.Items = append(list.Items, *ko)
+		ko.DeepCopyInto(&items[i])
+		i++
 	}
+	list.Items = items
 	return nil
 }
 

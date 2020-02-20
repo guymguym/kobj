@@ -1,0 +1,9 @@
+apiVersion: kobj.io/v1alpha1
+kind: Kobj
+metadata:
+  name: aaa
+  namespace: default
+data: |
+  111
+  222
+  333

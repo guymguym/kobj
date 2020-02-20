@@ -4,5 +4,5 @@
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=kobj.io
 
-// Package v1alpha1 contains API Schema definitions of kobj.io/v1alpha1
+// Package v1alpha1 contains API Schema definitions for the kobj.io/v1alpha1 API group
 package v1alpha1
