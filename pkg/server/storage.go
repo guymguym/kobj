@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/storage"
+	"k8s.io/klog"
 )
 
 type KobjMemStorage struct {
@@ -31,6 +32,7 @@ func (s *KobjMemStorage) Create(
 	out runtime.Object,
 	ttl uint64,
 ) error {
+	klog.Infof("KobjMemStorage.Create: %s => %v", key, obj)
 	ko := obj.(*kobjv1.Kobj)
 	old := s.Index[key]
 	s.Index[key] = ko
@@ -47,6 +49,7 @@ func (s *KobjMemStorage) Delete(
 	preconditions *storage.Preconditions,
 	validateDeletion storage.ValidateObjectFunc,
 ) error {
+	klog.Infof("KobjMemStorage.Delete: %s", key)
 	old := s.Index[key]
 	delete(s.Index, key)
 	if old != nil && out != nil {
@@ -64,10 +67,18 @@ func (s *KobjMemStorage) GuaranteedUpdate(
 	tryUpdate storage.UpdateFunc,
 	suggestion ...runtime.Object,
 ) error {
-	panic("implement me")
+	klog.Infof("KobjMemStorage.GuaranteedUpdate: %s => %v", key, ptrToType)
+	panic("KobjMemStorage.GuaranteedUpdate: TODO implement me")
 }
 
-func (s *KobjMemStorage) Get(ctx context.Context, key string, resourceVersion string, objPtr runtime.Object, ignoreNotFound bool) error {
+func (s *KobjMemStorage) Get(
+	ctx context.Context,
+	key string,
+	resourceVersion string,
+	objPtr runtime.Object,
+	ignoreNotFound bool,
+) error {
+	klog.Infof("KobjMemStorage.Get: %s => %v", key, objPtr)
 	ko := s.Index[key]
 	if ko == nil {
 		if ignoreNotFound {
@@ -79,7 +90,14 @@ func (s *KobjMemStorage) Get(ctx context.Context, key string, resourceVersion st
 	return nil
 }
 
-func (s *KobjMemStorage) GetToList(ctx context.Context, key string, resourceVersion string, p storage.SelectionPredicate, listObj runtime.Object) error {
+func (s *KobjMemStorage) GetToList(
+	ctx context.Context,
+	key string,
+	resourceVersion string,
+	p storage.SelectionPredicate,
+	listObj runtime.Object,
+) error {
+	klog.Infof("KobjMemStorage.GetToList: %s => %v", key, listObj)
 	list := listObj.(*kobjv1.KobjList)
 	ko := s.Index[key]
 	items := make([]kobjv1.Kobj, 1)
@@ -88,7 +106,14 @@ func (s *KobjMemStorage) GetToList(ctx context.Context, key string, resourceVers
 	return nil
 }
 
-func (s *KobjMemStorage) List(ctx context.Context, key string, resourceVersion string, p storage.SelectionPredicate, listObj runtime.Object) error {
+func (s *KobjMemStorage) List(
+	ctx context.Context,
+	key string,
+	resourceVersion string,
+	p storage.SelectionPredicate,
+	listObj runtime.Object,
+) error {
+	klog.Infof("KobjMemStorage.List: %s => %v", key, listObj)
 	list := listObj.(*kobjv1.KobjList)
 	items := make([]kobjv1.Kobj, len(s.Index))
 	i := 0
@@ -106,7 +131,8 @@ func (s *KobjMemStorage) Watch(
 	resourceVersion string,
 	p storage.SelectionPredicate,
 ) (watch.Interface, error) {
-	panic("implement me")
+	klog.Infof("KobjMemStorage.Watch: %s", key)
+	panic("KobjMemStorage.Watch: TODO implement me")
 }
 
 func (s *KobjMemStorage) WatchList(
@@ -115,10 +141,12 @@ func (s *KobjMemStorage) WatchList(
 	resourceVersion string,
 	p storage.SelectionPredicate,
 ) (watch.Interface, error) {
-	panic("implement me")
+	klog.Infof("KobjMemStorage.WatchList: %s", key)
+	panic("KobjMemStorage.WatchList: TODO implement me")
 }
 
 func (s *KobjMemStorage) Count(key string) (int64, error) {
+	klog.Infof("KobjMemStorage.Count: %s", key)
 	var count int64
 	for k := range s.Index {
 		if strings.HasPrefix(k, key) {
@@ -129,5 +157,6 @@ func (s *KobjMemStorage) Count(key string) (int64, error) {
 }
 
 func (s *KobjMemStorage) Versioner() storage.Versioner {
-	panic("implement me")
+	klog.Infof("KobjMemStorage.Versioner: TODO")
+	panic("KobjMemStorage.Versioner: TODO implement me")
 }

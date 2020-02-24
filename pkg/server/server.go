@@ -33,10 +33,15 @@ const KobjResource = "kobjs"
 
 var KobjGroupResource = kobjv1.Resource(KobjResource)
 
+// NewServer creates a new instance of the kobj api server
 func NewServer() *KobjServer {
 	klog.Info("KOBJ: Starting ...")
 
-	scheme := NewScheme()
+	scheme := runtime.NewScheme()
+	util.Assert(apis.AddToScheme(scheme))
+	// we need to add the options to empty v1
+	metav1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1"})
+
 	codecs := serializer.NewCodecFactory(scheme)
 	config := apiserver.NewRecommendedConfig(codecs)
 	delegate := apiserver.NewEmptyDelegate()
@@ -83,7 +88,8 @@ func NewServer() *KobjServer {
 		},
 		Storage: genericregistry.DryRunnableStorage{
 			Storage: storage,
-			Codec:   codecs.LegacyCodec(kobjv1.SchemeGroupVersion),
+			// Codec:   codecs.LegacyCodec(kobjv1.SchemeGroupVersion),
+			// Codec:   codecs.CodecForVersions(kobjv1.SchemeGroupVersion),
 		},
 	}
 	util.Assert(store.CompleteWithOptions(&generic.StoreOptions{
@@ -102,17 +108,9 @@ func NewServer() *KobjServer {
 	}
 }
 
+// Run the api server
 func (s *KobjServer) Run() error {
 	klog.Info("KOBJ: Running API server ...")
 	stopChan := apiserver.SetupSignalHandler()
 	return s.APIServer.PrepareRun().Run(stopChan)
-}
-
-func NewScheme() *runtime.Scheme {
-	scheme := runtime.NewScheme()
-	util.Assert(apis.AddToScheme(scheme))
-	// we need to add the options to empty v1
-	// TODO fix the server code to avoid this
-	metav1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1"})
-	return scheme
 }

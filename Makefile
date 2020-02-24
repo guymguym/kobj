@@ -20,7 +20,7 @@ mod:
 
 gen: mod
 	bash ./vendor/k8s.io/code-generator/generate-internal-groups.sh \
-		deepcopy,openapi \
+		deepcopy,openapi,client,protobuf \
 		github.com/kobj-io/kobj/pkg/apis \
 		github.com/kobj-io/kobj/pkg/apis \
 		github.com/kobj-io/kobj/pkg/apis \
