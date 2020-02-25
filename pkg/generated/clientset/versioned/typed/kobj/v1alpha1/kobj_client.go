@@ -19,8 +19,8 @@
 package v1alpha1
 
 import (
-	"github.com/kobj-io/kobj/pkg/apis/clientset/versioned/scheme"
 	v1alpha1 "github.com/kobj-io/kobj/pkg/apis/kobj/v1alpha1"
+	"github.com/kobj-io/kobj/pkg/generated/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

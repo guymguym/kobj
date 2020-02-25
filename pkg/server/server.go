@@ -5,7 +5,7 @@ import (
 
 	"github.com/kobj-io/kobj/pkg/apis"
 	kobjv1 "github.com/kobj-io/kobj/pkg/apis/kobj/v1alpha1"
-	genopenapi "github.com/kobj-io/kobj/pkg/apis/openapi"
+	genopenapi "github.com/kobj-io/kobj/pkg/generated/openapi"
 	"github.com/kobj-io/kobj/pkg/util"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

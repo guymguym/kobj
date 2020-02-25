@@ -6,6 +6,7 @@ require (
 	github.com/evanphx/json-patch v4.5.0+incompatible // indirect
 	github.com/go-openapi/spec v0.19.3
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
+	github.com/golang/protobuf v1.3.2
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/spf13/cobra v0.0.5

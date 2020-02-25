@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	kobjclient "github.com/kobj-io/kobj/pkg/apis/clientset/versioned"
 	kobjv1 "github.com/kobj-io/kobj/pkg/apis/kobj/v1alpha1"
+	kobjclient "github.com/kobj-io/kobj/pkg/generated/clientset/versioned"
 	"github.com/kobj-io/kobj/pkg/util"
 
 	"github.com/spf13/cobra"

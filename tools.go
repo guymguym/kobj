@@ -5,5 +5,6 @@
 package tools
 
 import (
+	_ "github.com/golang/protobuf/proto"
 	_ "k8s.io/code-generator"
 )
