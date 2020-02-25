@@ -26,6 +26,35 @@ clean:
 	@echo "✅ clean: done."
 .PHONY: clean
 
+help:
+	@echo '#--------#'
+	@echo '#- Help -#'
+	@echo '#--------#'
+	@echo
+	@echo '# Run Server:'
+	@echo
+	@echo '    ./kobj server'
+	@echo
+	@echo '# Run kobj client:'
+	@echo
+	@echo '    ./kobj put -n default aaa < main.go'
+	@echo '    ./kobj get -n default aaa'
+	@echo
+	@echo '# Run kubectl:'
+	@echo
+	@echo '    export KUBECONFIG=./kubeconfig'
+	@echo '    kubectl get kobjs.kobj.io aaa'
+	@echo '    kubectl get kobjs.kobj.io aaa -o yaml'
+	@echo
+	@echo '# Run curl:'
+	@echo
+	@echo '    curl -k https://localhost:8443'
+	@echo '    curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt' \
+		'-H "Authorization: Bearer $$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"' \
+		'https://kubernetes.default.svc/'
+	@echo
+.PHONY: help
+
 #-------------------#
 #- Code Generation -#
 #-------------------#

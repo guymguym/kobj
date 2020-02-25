@@ -84,11 +84,13 @@ func NewServer() *KobjServer {
 		UpdateStrategy:           strategy,
 		DeleteStrategy:           strategy,
 		TableConvertor: printerstorage.TableConvertor{
-			TableGenerator: printers.NewTableGenerator().With(printersinternal.AddHandlers),
+			TableGenerator: printers.NewTableGenerator().
+				With(printersinternal.AddHandlers).
+				With(KobjTableHandlers),
 		},
 		Storage: genericregistry.DryRunnableStorage{
 			Storage: storage,
-			// Codec:   codecs.LegacyCodec(kobjv1.SchemeGroupVersion),
+			Codec:   codecs.LegacyCodec(kobjv1.SchemeGroupVersion),
 			// Codec:   codecs.CodecForVersions(kobjv1.SchemeGroupVersion),
 		},
 	}
@@ -98,7 +100,11 @@ func NewServer() *KobjServer {
 	}))
 
 	groupInfo := apiserver.NewDefaultAPIGroupInfo(kobjv1.GroupName, scheme, runtime.NewParameterCodec(scheme), codecs)
-	groupInfo.VersionedResourcesStorageMap[kobjv1.VersionName] = map[string]rest.Storage{KobjResource: store}
+	groupInfo.VersionedResourcesStorageMap[kobjv1.VersionName] = map[string]rest.Storage{
+		KobjResource: store,
+		// TODO split to data subresource
+		// see https://github.com/operator-framework/operator-lifecycle-manager/blob/34f3888376fb24c75bc97a8f4e2b99b6a78ba801/pkg/package-server/apiserver/generic/storage.go#L68-L71
+	}
 	groupInfo.MetaGroupVersion = &kobjv1.SchemeGroupVersion
 	_ = s.InstallAPIGroup(&groupInfo)
 
