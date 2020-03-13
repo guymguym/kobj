@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"net"
+	goruntime "runtime"
 
 	"github.com/kobj-io/kobj/pkg/apis"
 	kobjv1 "github.com/kobj-io/kobj/pkg/apis/kobj/v1alpha1"
@@ -12,16 +14,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/apiserver/pkg/endpoints/openapi"
-	"k8s.io/apiserver/pkg/registry/generic"
-	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
 	"k8s.io/apiserver/pkg/registry/rest"
 	apiserver "k8s.io/apiserver/pkg/server"
 	apiserveroptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/klog"
-	"k8s.io/kubernetes/pkg/printers"
-	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
-	printerstorage "k8s.io/kubernetes/pkg/printers/storage"
 )
 
 type KobjServer struct {
@@ -41,6 +39,14 @@ func NewServer() *KobjServer {
 	util.Assert(apis.AddToScheme(scheme))
 	// we need to add the options to empty v1
 	metav1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1"})
+	// TODO: keep the generic API server from wanting this
+	scheme.AddUnversionedTypes(schema.GroupVersion{Group: "", Version: "v1"},
+		&metav1.Status{},
+		&metav1.APIVersions{},
+		&metav1.APIGroupList{},
+		&metav1.APIGroup{},
+		&metav1.APIResourceList{},
+	)
 
 	codecs := serializer.NewCodecFactory(scheme)
 	config := apiserver.NewRecommendedConfig(codecs)
@@ -62,46 +68,40 @@ func NewServer() *KobjServer {
 	util.Assert(sso.Validate()...)
 	util.Assert(sso.ApplyTo(&config.SecureServing, &config.LoopbackClientConfig))
 
+	var (
+		// these come from ldflags
+		gitVersion   = "v0.0.0-master+$Format:%h$"
+		gitCommit    = "$Format:%H$"          // sha1 from git, output of $(git rev-parse HEAD)
+		gitTreeState = ""                     // state of git tree, either "clean" or "dirty"
+		buildDate    = "1970-01-01T00:00:00Z" // build date in ISO8601 format, output of $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+	)
+	config.Version = &version.Info{
+		GitVersion:   gitVersion,
+		GitCommit:    gitCommit,
+		GitTreeState: gitTreeState,
+		BuildDate:    buildDate,
+		GoVersion:    goruntime.Version(),
+		Compiler:     goruntime.Compiler,
+		Platform:     fmt.Sprintf("%s/%s", goruntime.GOOS, goruntime.GOARCH),
+	}
+
 	config.OpenAPIConfig = apiserver.DefaultOpenAPIConfig(
 		genopenapi.GetOpenAPIDefinitions,
 		openapi.NewDefinitionNamer(scheme),
 	)
 	config.OpenAPIConfig.Info.Title = "Kobj"
 	config.OpenAPIConfig.Info.Version = "1.0.0"
+
 	completedConfig := config.Complete()
 
 	s, err := completedConfig.New("kobj", delegate)
 	util.Assert(err)
 
-	storage := NewKobjMemStorage()
-	strategy := &KobjStrategy{}
-	store := &genericregistry.Store{
-		NewFunc:                  func() runtime.Object { return &kobjv1.Kobj{} },
-		NewListFunc:              func() runtime.Object { return &kobjv1.KobjList{} },
-		DefaultQualifiedResource: KobjGroupResource,
-		PredicateFunc:            KobjMatcher,
-		CreateStrategy:           strategy,
-		UpdateStrategy:           strategy,
-		DeleteStrategy:           strategy,
-		TableConvertor: printerstorage.TableConvertor{
-			TableGenerator: printers.NewTableGenerator().
-				With(printersinternal.AddHandlers).
-				With(KobjTableHandlers),
-		},
-		Storage: genericregistry.DryRunnableStorage{
-			Storage: storage,
-			Codec:   codecs.LegacyCodec(kobjv1.SchemeGroupVersion),
-			// Codec:   codecs.CodecForVersions(kobjv1.SchemeGroupVersion),
-		},
-	}
-	util.Assert(store.CompleteWithOptions(&generic.StoreOptions{
-		RESTOptions: generic.RESTOptions{ResourcePrefix: KobjResource},
-		AttrFunc:    KobjGetAttrs,
-	}))
-
 	groupInfo := apiserver.NewDefaultAPIGroupInfo(kobjv1.GroupName, scheme, runtime.NewParameterCodec(scheme), codecs)
 	groupInfo.VersionedResourcesStorageMap[kobjv1.VersionName] = map[string]rest.Storage{
-		KobjResource: store,
+		// KobjResource: NewKobjMemRESTStorage(),
+		KobjResource: NewKobjStorage(),
+
 		// TODO split to data subresource
 		// see https://github.com/operator-framework/operator-lifecycle-manager/blob/34f3888376fb24c75bc97a8f4e2b99b6a78ba801/pkg/package-server/apiserver/generic/storage.go#L68-L71
 	}

@@ -1,0 +1,14 @@
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.kobj.io
+spec:
+  group: kobj.io
+  version: v1alpha1
+  versionPriority: 1000
+  groupPriorityMinimum: 1000
+  service:
+    name: kobj
+    namespace: kobj
+  # caBundle: <pem encoded ca cert that signs the server cert used by the webhook>
+  insecureSkipTLSVerify: true

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kobj
+  labels:
+    app: kobj
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kobj
+  template:
+    metadata:
+      labels:
+        app: kobj
+    spec:
+      containers:
+      - name: kobj
+        image: kobj/kobj
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8443
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "100m"
+            memory: "256Mi"

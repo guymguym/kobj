@@ -1,5 +1,6 @@
 # Binaries for programs and plugins
 /kobj
+/kobj-linux
 
 # Dependency directories (remove the comment below to include it)
 /vendor/

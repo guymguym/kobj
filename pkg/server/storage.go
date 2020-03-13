@@ -17,6 +17,35 @@ type KobjMemStorage struct {
 	Index map[string]*kobjv1.Kobj
 }
 
+func NewKobjMemRESTStorage() *rest.Storage {
+	storage := NewKobjMemStorage()
+	strategy := &KobjStrategy{}
+	store := &genericregistry.Store{
+		NewFunc:                  func() runtime.Object { return &kobjv1.Kobj{} },
+		NewListFunc:              func() runtime.Object { return &kobjv1.KobjList{} },
+		DefaultQualifiedResource: KobjGroupResource,
+		PredicateFunc:            KobjMatcher,
+		CreateStrategy:           strategy,
+		UpdateStrategy:           strategy,
+		DeleteStrategy:           strategy,
+		TableConvertor: printerstorage.TableConvertor{
+			TableGenerator: printers.NewTableGenerator().
+				With(printersinternal.AddHandlers).
+				With(KobjTableHandlers),
+		},
+		Storage: genericregistry.DryRunnableStorage{
+			Storage: storage,
+			Codec:   codecs.LegacyCodec(kobjv1.SchemeGroupVersion),
+			// Codec:   codecs.CodecForVersions(kobjv1.SchemeGroupVersion),
+		},
+	}
+	util.Assert(store.CompleteWithOptions(&generic.StoreOptions{
+		RESTOptions: generic.RESTOptions{ResourcePrefix: KobjResource},
+		AttrFunc:    KobjGetAttrs,
+	}))
+	return store
+}
+
 func NewKobjMemStorage() *KobjMemStorage {
 	return &KobjMemStorage{
 		Index: make(map[string]*kobjv1.Kobj),

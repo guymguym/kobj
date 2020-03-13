@@ -1,9 +1,14 @@
 # export GO111MODULE = on
 # export GOFLAGS = -mod=vendor
 
-all: build
+all: image
 	@echo "✅ all: done."
 .PHONY: all
+
+image: mod
+	GOOS=linux GOARCH=amd64 go build -o kobj-linux
+	docker build -t kobj/kobj .
+.PHONY: image
 
 build: mod
 	go build
@@ -42,7 +47,7 @@ help:
 	@echo
 	@echo '# Run kubectl:'
 	@echo
-	@echo '    export KUBECONFIG=./kubeconfig'
+	@echo '    export KUBECONFIG=./kubeconfig-local'
 	@echo '    kubectl get kobjs.kobj.io aaa'
 	@echo '    kubectl get kobjs.kobj.io aaa -o yaml'
 	@echo

@@ -17,9 +17,10 @@ import (
 
 func NewGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "get",
+		Use:  "get <name>",
 		Long: "get object",
 		Run:  RunGet,
+		Args: cobra.ExactArgs(1),
 	}
 	cmd.Flags().StringP("namespace", "n", "", "Set Namespace")
 	return cmd
@@ -27,9 +28,10 @@ func NewGetCommand() *cobra.Command {
 
 func NewPutCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "put",
+		Use:  "put <name>",
 		Long: "put object",
 		Run:  RunPut,
+		Args: cobra.ExactArgs(1),
 	}
 	cmd.Flags().StringP("namespace", "n", "", "Set Namespace")
 	return cmd

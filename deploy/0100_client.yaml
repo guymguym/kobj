@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kobj-client
+  labels:
+    app: kobj-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kobj-client
+  template:
+    metadata:
+      labels:
+        app: kobj-client
+    spec:
+      containers:
+      - name: kobj-client
+        image: kobj/kobj
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - "-c"
+          - "while true; do date; sleep 10; done"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "100m"
+            memory: "256Mi"

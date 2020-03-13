@@ -17,14 +17,11 @@ func Assert(errs ...error) {
 
 // KubeConfig returns the local config
 func KubeConfig() *rest.Config {
-	kubeConfig, err :=
-		clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			clientcmd.NewDefaultClientConfigLoadingRules(),
-			&clientcmd.ConfigOverrides{},
-		).ClientConfig()
-	if err != nil {
-		panic(err)
-	}
-
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	kubeConfig, err := clientConfig.ClientConfig()
+	Assert(err)
 	return kubeConfig
 }

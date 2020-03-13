@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"github.com/kobj-io/kobj/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -17,6 +18,9 @@ const (
 var (
 	// SchemeGroupVersion is group version used to register these objects
 	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: VersionName}
+
+	// InternalGroupVersion is group version used to register these objects
+	InternalGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
 
 	// SchemeBuilder is a list of build functions to apply to a scheme
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
@@ -35,10 +39,15 @@ func Resource(resource string) schema.GroupResource {
 
 // Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
+	scheme.AddKnownTypes(InternalGroupVersion,
+		&Kobj{},
+		&KobjList{},
+	)
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Kobj{},
 		&KobjList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
+	util.Assert(scheme.SetVersionPriority(SchemeGroupVersion))
 	return nil
 }
